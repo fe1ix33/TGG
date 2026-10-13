@@ -3,18 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Telegram Web Pro PWA</title>
+  <title>Nexus Pro Web</title>
   
   <meta name="theme-color" content="#09090b">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIlRlbGVncmFtIFdlYiBQcm8iLAogICJzaG9ydF9uYW1lIjogIlRlbGVncmFtIFBybyIsCiAgInN0YXJ0X3VybCI6ICIuLyIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzA5MDkwYiIsCiAgInRoZW1lX2NvbG9yIjogIiMwOTA5MGIiCn0=">
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
 
   <script>
@@ -22,9 +18,7 @@
       darkMode: 'class',
       theme: {
         extend: {
-          colors: {
-            brand: { 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5' }
-          },
+          colors: { brand: { 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5' } },
           backgroundImage: {
             'chat-pattern': "url('data:image/svg+xml,%3Csvg width=\\'20\\' height=\\'20\\' viewBox=\\'0 0 20 20\\' xmlns=\\'http://www.w3.org/2000/svg\\'%3E%3Cg fill=\\'%2318181b\\' fill-opacity=\\'1\\' fill-rule=\\'evenodd\\'%3E%3Ccircle cx=\\'3\\' cy=\\'3\\' r=\\'3\\'/%3E%3Ccircle cx=\\'13\\' cy=\\'13\\' r=\\'3\\'/%3E%3C/g%3E%3C/svg%3E')"
           }
@@ -36,77 +30,82 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
     .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); }
     .glass-panel { background: rgba(24, 24, 27, 0.7); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
-    .msg-enter { animation: slideIn 0.2s ease-out forwards; }
-    @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .msg-enter { animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; transform-origin: bottom; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(15px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .reaction-menu { transition: all 0.2s; opacity: 0; transform: scale(0.8) translateY(10px); pointer-events: none; }
+    .group:hover .reaction-menu { opacity: 1; transform: scale(1) translateY(0); pointer-events: auto; }
   </style>
 </head>
 <body class="bg-zinc-950 text-zinc-100 h-[100dvh] flex overflow-hidden select-none antialiased">
 
-  <!-- Mobile Menu Overlay -->
   <div id="mobile-overlay" class="fixed inset-0 bg-black/60 z-20 hidden md:hidden transition-opacity"></div>
 
   <!-- Sidebar -->
-  <aside id="sidebar" class="absolute md:relative w-80 md:w-96 bg-zinc-900 border-r border-zinc-800/80 flex flex-col h-full z-30 shrink-0 transform -translate-x-full md:translate-x-0 transition-transform duration-300 shadow-2xl md:shadow-none">
+  <aside id="sidebar" class="absolute md:relative w-85 md:w-96 bg-zinc-900 border-r border-zinc-800/80 flex flex-col h-full z-30 shrink-0 transform -translate-x-full md:translate-x-0 transition-transform duration-300 shadow-2xl md:shadow-none">
     
-    <!-- Header -->
     <div class="p-4 flex items-center justify-between glass-panel border-b border-zinc-800/80 sticky top-0 z-10">
       <div class="flex items-center gap-3">
         <button id="close-sidebar-btn" class="md:hidden p-2 -ml-2 rounded-full text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800">
           <i class="fa-solid fa-arrow-left"></i>
         </button>
         <div class="relative">
-          <h1 class="font-bold text-lg tracking-tight bg-gradient-to-r from-brand-400 to-purple-500 bg-clip-text text-transparent">Nexus Pro</h1>
-          <span class="absolute -top-1 -right-6 text-[9px] font-bold bg-brand-500/20 text-brand-400 px-1.5 py-0.5 rounded-full border border-brand-500/30">PRO</span>
+          <h1 class="font-bold text-xl tracking-tight bg-gradient-to-r from-brand-400 to-purple-500 bg-clip-text text-transparent">Nexus Pro</h1>
         </div>
       </div>
-      <div class="flex items-center gap-1">
-        <button class="p-2 rounded-full text-zinc-400 hover:text-brand-400 hover:bg-zinc-800 transition">
-          <i class="fa-solid fa-folder-plus text-sm"></i>
+      <div class="flex items-center gap-2">
+        <button class="w-8 h-8 rounded-full bg-zinc-800 text-zinc-400 hover:text-brand-400 flex items-center justify-center transition">
+          <i class="fa-solid fa-pen text-xs"></i>
         </button>
       </div>
     </div>
 
-    <!-- Search -->
-    <div class="px-3 py-3 border-b border-zinc-800/50">
+    <!-- Pinned Folders (New Feature) -->
+    <div class="px-3 pt-3 flex gap-2 overflow-x-auto custom-scrollbar pb-2">
+      <button class="px-4 py-1.5 bg-brand-500/20 text-brand-400 rounded-full text-xs font-semibold whitespace-nowrap border border-brand-500/30">Все чаты</button>
+      <button class="px-4 py-1.5 bg-zinc-800 text-zinc-400 hover:text-zinc-200 rounded-full text-xs font-semibold whitespace-nowrap transition">Работа</button>
+      <button class="px-4 py-1.5 bg-zinc-800 text-zinc-400 hover:text-zinc-200 rounded-full text-xs font-semibold whitespace-nowrap transition">Непрочитанные</button>
+    </div>
+
+    <div class="px-3 py-2 border-b border-zinc-800/50">
       <div class="relative group">
-        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-zinc-500 text-sm group-focus-within:text-brand-400 transition-colors"></i>
-        <input type="text" placeholder="Поиск или новый чат..." class="w-full bg-zinc-950/50 text-sm text-zinc-200 pl-9 pr-4 py-2.5 rounded-xl border border-zinc-800 focus:outline-none focus:border-brand-500/50 focus:ring-1 focus:ring-brand-500/50 transition-all placeholder-zinc-600">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-zinc-500 text-sm group-focus-within:text-brand-400 transition-colors"></i>
+        <input type="text" placeholder="Поиск сообщений и файлов..." class="w-full bg-zinc-950/50 text-sm text-zinc-200 pl-9 pr-4 py-2 rounded-xl border border-zinc-800 focus:outline-none focus:border-brand-500/50 focus:ring-1 focus:ring-brand-500/50 transition-all">
       </div>
     </div>
 
     <!-- Chat List -->
     <div id="chat-list" class="flex-1 overflow-y-auto custom-scrollbar">
-      <!-- Active Chat Item -->
-      <div class="px-3 py-2 cursor-pointer transition">
-        <div class="flex items-center gap-3 p-2 rounded-xl bg-brand-500/10 border border-brand-500/20 relative">
-          <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-brand-500 rounded-r-full"></div>
+      <div class="px-2 py-1">
+        <div class="flex items-center gap-3 p-2.5 rounded-xl bg-brand-500/10 border border-brand-500/20 cursor-pointer">
           <div class="relative">
             <img src="https://api.dicebear.com/7.x/bottts/svg?seed=saved&backgroundColor=6366f1" class="w-12 h-12 rounded-full border border-zinc-700">
             <span class="w-3.5 h-3.5 bg-emerald-500 border-2 border-zinc-900 rounded-full absolute bottom-0 right-0"></span>
           </div>
           <div class="flex-1 min-w-0">
-            <div class="flex justify-between items-baseline mb-1">
-              <h3 class="font-semibold text-zinc-100 truncate text-sm">Избранное</h3>
-              <span class="text-xs text-brand-400 font-medium">15:30</span>
+            <div class="flex justify-between items-baseline mb-0.5">
+              <h3 class="font-semibold text-zinc-100 truncate text-[15px]">Команда Разработки</h3>
+              <span class="text-xs text-brand-400 font-medium">Сейчас</span>
             </div>
-            <p class="text-sm text-zinc-400 truncate">Документ сохранен</p>
+            <div class="flex items-center justify-between gap-2">
+              <p class="text-sm text-brand-300 truncate">Алексей: Сервер обновлен 🚀</p>
+              <span class="w-5 h-5 bg-brand-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shrink-0 shadow-lg shadow-brand-500/20">3</span>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- User Profile Bar -->
     <div class="p-3 glass-panel border-t border-zinc-800/80 flex items-center justify-between">
       <div class="flex items-center gap-3 overflow-hidden cursor-pointer hover:bg-zinc-800/50 p-1.5 rounded-lg transition flex-1">
-        <img id="my-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=me&backgroundColor=3f3f46" class="w-9 h-9 rounded-full object-cover border border-zinc-700">
+        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=me&backgroundColor=3f3f46" class="w-9 h-9 rounded-full border border-zinc-700">
         <div class="flex flex-col min-w-0">
-          <span id="my-name" class="font-medium text-sm text-zinc-200 truncate">Пользователь</span>
-          <span class="text-xs text-zinc-500 truncate" id="my-status">В сети</span>
+          <span class="font-medium text-sm text-zinc-200 truncate">Max Developer</span>
+          <span class="text-xs text-emerald-400 flex items-center gap-1"><span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>В сети</span>
         </div>
       </div>
       <button class="p-2 text-zinc-400 hover:text-zinc-100 transition rounded-full hover:bg-zinc-800">
@@ -127,90 +126,69 @@
         <div class="flex items-center gap-3 cursor-pointer">
           <img src="https://api.dicebear.com/7.x/bottts/svg?seed=saved&backgroundColor=6366f1" class="w-10 h-10 rounded-full border border-zinc-800">
           <div class="flex flex-col">
-            <h2 class="font-semibold text-zinc-100 leading-tight">Избранное</h2>
-            <span class="text-xs text-brand-400 font-medium">Ваше личное хранилище</span>
+            <h2 class="font-semibold text-zinc-100 leading-tight">Команда Разработки</h2>
+            <span class="text-xs text-zinc-400 font-medium">12 участников, 3 онлайн</span>
           </div>
         </div>
       </div>
       <div class="flex items-center gap-1 text-zinc-400">
-        <button id="call-btn" class="w-10 h-10 flex items-center justify-center hover:bg-zinc-800 hover:text-emerald-400 rounded-full transition">
+        <button class="w-10 h-10 flex items-center justify-center hover:bg-zinc-800 hover:text-zinc-200 rounded-full transition hidden md:flex">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+        <div class="w-px h-6 bg-zinc-800 mx-1 hidden md:block"></div>
+        <button class="w-10 h-10 flex items-center justify-center hover:bg-zinc-800 hover:text-emerald-400 rounded-full transition">
           <i class="fa-solid fa-phone"></i>
         </button>
-        <button id="video-call-btn" class="w-10 h-10 flex items-center justify-center hover:bg-zinc-800 hover:text-brand-400 rounded-full transition">
+        <button class="w-10 h-10 flex items-center justify-center hover:bg-zinc-800 hover:text-brand-400 rounded-full transition">
           <i class="fa-solid fa-video"></i>
-        </button>
-        <button class="w-10 h-10 flex items-center justify-center hover:bg-zinc-800 hover:text-zinc-200 rounded-full transition">
-          <i class="fa-solid fa-ellipsis-vertical"></i>
         </button>
       </div>
     </header>
 
-    <!-- Video Call Overlay -->
-    <div id="video-overlay" class="hidden absolute inset-0 bg-zinc-950/98 z-50 flex-col items-center justify-center p-4 backdrop-blur-xl">
-      <div class="relative w-full max-w-4xl aspect-video bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl shadow-brand-500/10">
-        <video id="remote-video" autoplay playsinline class="w-full h-full object-cover"></video>
-        <div class="absolute inset-0 shadow-[inset_0_0_100px_rgba(0,0,0,0.5)] pointer-events-none"></div>
-        <div class="absolute top-4 left-4 flex items-center gap-2 bg-black/50 backdrop-blur px-3 py-1.5 rounded-full border border-white/10">
-          <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-          <span class="text-xs font-medium text-white">00:14</span>
-        </div>
-        <video id="local-video" autoplay playsinline muted class="w-32 md:w-48 aspect-video bg-zinc-950 rounded-xl border border-zinc-700 absolute bottom-4 right-4 object-cover shadow-2xl"></video>
-      </div>
-      <div class="flex items-center gap-6 mt-8">
-        <button class="w-14 h-14 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full flex items-center justify-center shadow-lg transition">
-          <i class="fa-solid fa-microphone-lines-slash"></i>
-        </button>
-        <button id="end-call-btn" class="w-16 h-16 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg shadow-red-500/20 transition hover:scale-105">
-          <i class="fa-solid fa-phone-slash text-xl"></i>
-        </button>
-        <button class="w-14 h-14 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full flex items-center justify-center shadow-lg transition">
-          <i class="fa-solid fa-video-slash"></i>
-        </button>
-      </div>
-    </div>
-
     <!-- Messages Container -->
-    <div id="messages-container" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 custom-scrollbar"></div>
-
-    <!-- Typing Indicator (Hidden by default) -->
-    <div id="typing-indicator" class="hidden px-6 pb-2 text-xs text-brand-400 font-medium flex items-center gap-2">
-      Избранное печатает<span class="flex gap-0.5"><span class="animate-bounce">.</span><span class="animate-bounce" style="animation-delay: 0.1s">.</span><span class="animate-bounce" style="animation-delay: 0.2s">.</span></span>
+    <div id="messages-container" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-5 custom-scrollbar flex flex-col">
+      <!-- Date Separator -->
+      <div class="flex justify-center w-full my-2">
+        <span class="bg-zinc-900/80 border border-zinc-800 backdrop-blur text-zinc-400 text-xs px-3 py-1 rounded-full font-medium shadow-sm">Сегодня</span>
+      </div>
     </div>
 
-    <!-- Live Audio Waveform -->
-    <div id="waveform-container" class="hidden px-4 py-3 bg-zinc-900 border-t border-zinc-800 flex items-center gap-4">
-      <div class="flex items-center gap-2 px-3 py-1.5 bg-red-500/10 border border-red-500/20 rounded-full">
-        <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-        <span class="text-red-500 text-xs font-bold tracking-widest">REC</span>
+    <!-- Media Attachment Preview Area (New Feature) -->
+    <div id="attachment-preview" class="hidden px-4 py-3 bg-zinc-900 border-t border-zinc-800 flex gap-3 overflow-x-auto custom-scrollbar">
+      <div class="relative w-20 h-20 rounded-xl overflow-hidden border border-zinc-700 shrink-0 group">
+        <img id="preview-img" src="" class="w-full h-full object-cover">
+        <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition cursor-pointer" onclick="clearAttachment()">
+          <i class="fa-solid fa-xmark text-white text-lg"></i>
+        </div>
       </div>
-      <canvas id="waveform-canvas" class="flex-1 h-10 rounded-lg"></canvas>
-      <button id="stop-voice-btn" class="w-10 h-10 flex items-center justify-center bg-zinc-800 hover:bg-red-500/20 text-zinc-400 hover:text-red-400 rounded-full transition">
-        <i class="fa-solid fa-trash-can"></i>
-      </button>
-      <button class="w-10 h-10 flex items-center justify-center bg-brand-500 hover:bg-brand-400 text-white rounded-full transition shadow-lg shadow-brand-500/20">
-        <i class="fa-solid fa-arrow-up"></i>
-      </button>
     </div>
 
     <!-- Input Footer -->
-    <footer class="p-3 md:p-4 glass-panel border-t border-zinc-800/80">
-      <form id="message-form" class="max-w-4xl mx-auto flex items-end gap-2 relative">
-        <button type="button" class="p-3 text-zinc-400 hover:text-zinc-200 transition shrink-0">
+    <footer class="p-3 md:p-4 glass-panel border-t border-zinc-800/80 relative">
+      <!-- Typing Indicator -->
+      <div id="typing-indicator" class="absolute -top-6 left-6 text-[11px] text-brand-400 font-medium flex items-center gap-1.5 opacity-0 transition-opacity">
+        Алексей печатает <span class="flex gap-0.5"><span class="w-1 h-1 bg-brand-400 rounded-full animate-bounce"></span><span class="w-1 h-1 bg-brand-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></span><span class="w-1 h-1 bg-brand-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></span></span>
+      </div>
+
+      <form id="message-form" class="max-w-5xl mx-auto flex items-end gap-2 relative">
+        <button type="button" class="p-3 text-zinc-400 hover:text-brand-400 transition shrink-0 rounded-full hover:bg-zinc-800">
           <i class="fa-regular fa-face-smile text-xl"></i>
         </button>
         
-        <div class="flex-1 relative bg-zinc-900/80 rounded-2xl border border-zinc-700/50 focus-within:border-brand-500/50 focus-within:ring-1 focus-within:ring-brand-500/50 transition-all flex items-end">
-          <textarea id="message-input" rows="1" placeholder="Написать сообщение..." class="w-full bg-transparent text-zinc-100 px-4 py-3 max-h-32 focus:outline-none text-[15px] resize-none custom-scrollbar rounded-2xl"></textarea>
-          <button type="button" class="p-3 text-zinc-400 hover:text-zinc-200 transition shrink-0">
+        <div class="flex-1 relative bg-zinc-900/80 rounded-2xl border border-zinc-700/50 focus-within:border-brand-500/50 focus-within:ring-1 focus-within:ring-brand-500/50 transition-all flex items-end shadow-inner">
+          <textarea id="message-input" rows="1" placeholder="Введите сообщение..." class="w-full bg-transparent text-zinc-100 px-4 py-3 max-h-32 focus:outline-none text-[15px] resize-none custom-scrollbar rounded-2xl"></textarea>
+          
+          <input type="file" id="file-upload" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
+          <button type="button" onclick="document.getElementById('file-upload').click()" class="p-3 text-zinc-400 hover:text-brand-400 transition shrink-0">
             <i class="fa-solid fa-paperclip text-lg"></i>
           </button>
         </div>
 
-        <button type="button" id="voice-btn" class="w-12 h-12 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-full transition shrink-0">
+        <button type="button" id="voice-btn" class="w-12 h-12 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 text-brand-400 rounded-full transition shrink-0 shadow-sm">
           <i class="fa-solid fa-microphone text-lg"></i>
         </button>
         
-        <button type="submit" id="send-btn" class="hidden w-12 h-12 flex items-center justify-center bg-brand-500 hover:bg-brand-400 text-white rounded-full shadow-lg shadow-brand-500/20 transition shrink-0">
+        <button type="submit" id="send-btn" class="hidden w-12 h-12 flex items-center justify-center bg-gradient-to-tr from-brand-600 to-brand-400 hover:scale-105 text-white rounded-full shadow-lg shadow-brand-500/25 transition-all shrink-0">
           <i class="fa-solid fa-paper-plane text-lg ml-[-2px]"></i>
         </button>
       </form>
@@ -218,42 +196,36 @@
   </main>
 
   <script>
-    // 1. Mobile Sidebar Toggle
+    // 1. Mobile Menu Logic
     const sidebar = document.getElementById('sidebar');
     const mobileOverlay = document.getElementById('mobile-overlay');
-    const menuBtn = document.getElementById('menu-btn');
-    const closeSidebarBtn = document.getElementById('close-sidebar-btn');
-
     function toggleSidebar(show) {
-      if (show) {
-        sidebar.classList.remove('-translate-x-full');
-        mobileOverlay.classList.remove('hidden');
-      } else {
-        sidebar.classList.add('-translate-x-full');
-        mobileOverlay.classList.add('hidden');
-      }
+      sidebar.classList.toggle('-translate-x-full', !show);
+      mobileOverlay.classList.toggle('hidden', !show);
     }
-
-    menuBtn.addEventListener('click', () => toggleSidebar(true));
-    closeSidebarBtn.addEventListener('click', () => toggleSidebar(false));
+    document.getElementById('menu-btn').addEventListener('click', () => toggleSidebar(true));
+    document.getElementById('close-sidebar-btn').addEventListener('click', () => toggleSidebar(false));
     mobileOverlay.addEventListener('click', () => toggleSidebar(false));
 
-    // 2. Input Auto-resize & Send Button Toggle
+    // 2. Dynamic Typing Indicator & Input Logic
     const messageInput = document.getElementById('message-input');
     const voiceBtn = document.getElementById('voice-btn');
     const sendBtn = document.getElementById('send-btn');
+    const typingIndicator = document.getElementById('typing-indicator');
+    let typingTimer;
 
     messageInput.addEventListener('input', function() {
       this.style.height = 'auto';
       this.style.height = (this.scrollHeight) + 'px';
       
-      if (this.value.trim().length > 0) {
-        voiceBtn.classList.add('hidden');
-        sendBtn.classList.remove('hidden');
-      } else {
-        voiceBtn.classList.remove('hidden');
-        sendBtn.classList.add('hidden');
-      }
+      const hasText = this.value.trim().length > 0 || document.getElementById('attachment-preview').classList.contains('hidden') === false;
+      voiceBtn.classList.toggle('hidden', hasText);
+      sendBtn.classList.toggle('hidden', !hasText);
+
+      // Simulate typing broadcast (for Socket.io later)
+      typingIndicator.style.opacity = '1';
+      clearTimeout(typingTimer);
+      typingTimer = setTimeout(() => { typingIndicator.style.opacity = '0'; }, 1500);
     });
 
     messageInput.addEventListener('keydown', (e) => {
@@ -263,29 +235,59 @@
       }
     });
 
-    // 3. UI Messages Rendering (Pro Styling)
-    const messagesContainer = document.getElementById('messages-container');
-    const messageForm = document.getElementById('message-form');
+    // 3. File Attachment Preview (New)
+    function handleFileSelect(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          document.getElementById('preview-img').src = e.target.result;
+          document.getElementById('attachment-preview').classList.remove('hidden');
+          voiceBtn.classList.add('hidden');
+          sendBtn.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    }
 
-    function renderMessage(text, isMine = true, senderName = 'Вы') {
+    function clearAttachment() {
+      document.getElementById('file-upload').value = '';
+      document.getElementById('attachment-preview').classList.add('hidden');
+      if (messageInput.value.trim() === '') {
+        voiceBtn.classList.remove('hidden');
+        sendBtn.classList.add('hidden');
+      }
+    }
+
+    // 4. Advanced Message Rendering (Reactions & Images)
+    const messagesContainer = document.getElementById('messages-container');
+
+    function renderMessage(text, isMine = true, senderName = 'Вы', imgSrc = null) {
       const msgDiv = document.createElement('div');
-      msgDiv.className = `flex ${isMine ? 'justify-end' : 'justify-start'} msg-enter w-full`;
+      msgDiv.className = `flex ${isMine ? 'justify-end' : 'justify-start'} msg-enter w-full relative group`;
       
       const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
       
+      let imageHtml = imgSrc ? `<img src="${imgSrc}" class="w-full max-w-sm rounded-xl mb-2 border border-black/10">` : '';
+      
       msgDiv.innerHTML = `
-        <div class="max-w-[85%] md:max-w-[65%] ${isMine ? 'bg-gradient-to-br from-brand-600 to-brand-500 text-white rounded-2xl rounded-br-sm' : 'bg-zinc-900 border border-zinc-800 text-zinc-100 rounded-2xl rounded-bl-sm'} px-4 py-2.5 shadow-md relative group">
-          ${!isMine ? `<div class="text-xs text-brand-400 font-semibold mb-1 cursor-pointer hover:underline">\${senderName}</div>` : ''}
-          <p class="text-[15px] leading-relaxed whitespace-pre-wrap break-words">${text}</p>
-          <div class="flex items-center justify-end gap-1 mt-1 -mb-1 mr-[-4px]">
-            <span class="text-[10px] ${isMine ? 'text-brand-100/70' : 'text-zinc-500'}">${time}</span>
-            ${isMine ? '<i class="fa-solid fa-check-double text-[10px] text-white/70"></i>' : ''}
+        <div class="max-w-[85%] md:max-w-[65%] ${isMine ? 'bg-gradient-to-br from-brand-600 to-brand-500 text-white rounded-2xl rounded-br-sm' : 'bg-zinc-900 border border-zinc-800 text-zinc-100 rounded-2xl rounded-bl-sm'} p-1.5 shadow-md relative">
+          <div class="px-2.5 pt-1.5 pb-1">
+            ${!isMine ? `<div class="text-xs text-brand-400 font-semibold mb-1">\${senderName}</div>` : ''}
+            ${imageHtml}
+            ${text ? `<p class="text-[15px] leading-relaxed whitespace-pre-wrap break-words">\${text}</p>` : ''}
           </div>
-          <!-- Context Menu Trigger -->
-          <div class="absolute ${isMine ? '-left-10' : '-right-10'} top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button class="w-8 h-8 flex items-center justify-center rounded-full bg-zinc-800/80 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700 backdrop-blur">
-              <i class="fa-solid fa-reply text-xs"></i>
-            </button>
+          <div class="flex items-center justify-end gap-1 mt-0.5 px-2 pb-1">
+            <span class="text-[10px] ${isMine ? 'text-brand-100/80' : 'text-zinc-500'} font-medium">${time}</span>
+            ${isMine ? '<i class="fa-solid fa-check-double text-[10px] text-white/80"></i>' : ''}
+          </div>
+
+          <!-- Popover Menu -->
+          <div class="reaction-menu absolute ${isMine ? '-left-32' : '-right-32'} top-1 flex items-center gap-1 bg-zinc-800/95 backdrop-blur-xl border border-zinc-700 p-1 rounded-2xl shadow-xl">
+            <button class="w-8 h-8 rounded-full hover:bg-zinc-700 flex items-center justify-center text-lg transition hover:scale-110">👍</button>
+            <button class="w-8 h-8 rounded-full hover:bg-zinc-700 flex items-center justify-center text-lg transition hover:scale-110">❤️</button>
+            <div class="w-px h-4 bg-zinc-700 mx-1"></div>
+            <button class="w-8 h-8 rounded-full hover:bg-zinc-700 flex items-center justify-center text-zinc-400 hover:text-brand-400 transition"><i class="fa-solid fa-reply text-xs"></i></button>
           </div>
         </div>
       `;
@@ -293,104 +295,28 @@
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
-    renderMessage('Архитектура обновлена. Соединение установлено по протоколу HTTPS. Данные зашифрованы.', false, 'Nexus System');
+    renderMessage('Сервер запущен и работает стабильно. Socket.io подключен.', false, 'Алексей');
 
-    messageForm.addEventListener('submit', (e) => {
+    // 5. Send Form Handler
+    document.getElementById('message-form').addEventListener('submit', (e) => {
       e.preventDefault();
       const text = messageInput.value.trim();
-      if (!text) return;
+      const preview = document.getElementById('attachment-preview');
+      const imgSrc = preview.classList.contains('hidden') ? null : document.getElementById('preview-img').src;
 
-      renderMessage(text, true);
+      if (!text && !imgSrc) return;
+
+      renderMessage(text, true, 'Вы', imgSrc);
+      
       messageInput.value = '';
       messageInput.style.height = 'auto';
-      voiceBtn.classList.remove('hidden');
-      sendBtn.classList.add('hidden');
+      clearAttachment();
+      typingIndicator.style.opacity = '0';
 
       if (typeof confetti === 'function' && text.includes('🚀')) {
         confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#6366f1', '#8b5cf6', '#ec4899'] });
       }
     });
-
-    // 4. Web Audio API Waveform Visualizer (Pro Gradient)
-    let audioCtx, analyser, micStream, animationFrame;
-    const waveformContainer = document.getElementById('waveform-container');
-    const canvas = document.getElementById('waveform-canvas');
-    const canvasCtx = canvas.getContext('2d');
-
-    voiceBtn.addEventListener('click', async () => {
-      try {
-        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        waveformContainer.classList.remove('hidden');
-        document.getElementById('message-form').classList.add('hidden');
-
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        analyser = audioCtx.createAnalyser();
-        const source = audioCtx.createMediaStreamSource(micStream);
-        source.connect(analyser);
-
-        analyser.fftSize = 128;
-        const bufferLength = analyser.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
-
-        function drawWaveform() {
-          animationFrame = requestAnimationFrame(drawWaveform);
-          analyser.getByteFrequencyData(dataArray);
-
-          canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-          
-          const barWidth = (canvas.width / bufferLength) * 2.5;
-          let x = 0;
-
-          // Gradient
-          const gradient = canvasCtx.createLinearGradient(0, 0, 0, canvas.height);
-          gradient.addColorStop(0, '#818cf8');
-          gradient.addColorStop(1, '#6366f1');
-
-          for (let i = 0; i < bufferLength; i++) {
-            const barHeight = (dataArray[i] / 255) * canvas.height;
-            canvasCtx.fillStyle = gradient;
-            canvasCtx.beginPath();
-            canvasCtx.roundRect(x, canvas.height - barHeight, barWidth - 1, barHeight, 4);
-            canvasCtx.fill();
-            x += barWidth;
-          }
-        }
-        drawWaveform();
-      } catch (err) {
-        alert('Требуется доступ к микрофону');
-      }
-    });
-
-    document.getElementById('stop-voice-btn').addEventListener('click', () => {
-      if (micStream) micStream.getTracks().forEach(t => t.stop());
-      if (animationFrame) cancelAnimationFrame(animationFrame);
-      waveformContainer.classList.add('hidden');
-      document.getElementById('message-form').classList.remove('hidden');
-    });
-
-    // 5. Video Calls Logic (UI Only Setup)
-    let pc, localStream;
-    const videoCallBtn = document.getElementById('video-call-btn');
-    const videoOverlay = document.getElementById('video-overlay');
-    const localVideo = document.getElementById('local-video');
-
-    videoCallBtn.addEventListener('click', async () => {
-      try {
-        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        localVideo.srcObject = localStream;
-        videoOverlay.classList.remove('hidden');
-        videoOverlay.classList.add('flex');
-      } catch (err) {
-        alert('Требуется доступ к камере');
-      }
-    });
-
-    document.getElementById('end-call-btn').addEventListener('click', () => {
-      if (localStream) localStream.getTracks().forEach(t => t.stop());
-      videoOverlay.classList.add('hidden');
-      videoOverlay.classList.remove('flex');
-    });
-
   </script>
 </body>
 </html>
